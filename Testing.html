@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNLIMITED // ACCESS</title>
+    
+    <style>
+        /* --- CORE ARCHITECTURE --- */
+        :root {
+            --h: 0; --s: 0%; --l: 100%; /* Default White Accent */
+            --accent: hsl(var(--h), var(--s), var(--l));
+            --accent-dim: hsla(var(--h), var(--s), var(--l), 0.1);
+            --bg-void: #030303;
+            --surface: #0a0a0a;
+            --surface-2: #111;
+            --text-main: #eee;
+            --text-sub: #555;
+            --border: #222;
+            --font-display: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* THEME MATRIX */
+        body[data-theme="crimson"] { --h: 348; --s: 83%; --l: 47%; }
+        body[data-theme="cyan"] { --h: 180; --s: 100%; --l: 50%; }
+        body[data-theme="amber"] { --h: 30; --s: 100%; --l: 50%; }
+        body[data-theme="void"] { --h: 0; --s: 0%; --l: 100%; }
+
+        /* RESET */
+        * { box-sizing: border-box; outline: none; }
+        ::selection { background: var(--accent); color: #000; }
+        
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND NOISE & GRID --- */
+        .scaffold {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100px 100px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+        
+        /* --- THE MONOLITH (Main Container) --- */
+        .monolith {
+            position: relative; z-index: 10;
+            width: 1400px; height: 850px;
+            background: var(--surface);
+            display: grid; grid-template-columns: 40% 60%;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 100px -20px rgba(0,0,0,1);
+        }
+
+        /* --- LEFT: CONTROL DECK (Forms) --- */
+        .deck {
+            position: relative;
+            padding: 60px;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--surface) 0%, #000 100%);
+        }
+
+        /* Header Area */
+        .terminal-header {
+            margin-bottom: 60px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .brand {
+            font-family: var(--font-display);
+            font-size: 0.8rem; color: var(--accent);
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .brand::before { content: '/// '; opacity: 0.5; }
+        
+        h1 {
+            font-size: 3.5rem; line-height: 0.9; margin: 0;
+            font-weight: 800; letter-spacing: -2px;
+            background: linear-gradient(to right, #fff, #666);
+            -webkit-background-clip: text; color: transparent;
+        }
+
+        /* --- FORM ARCHITECTURE --- */
+        .form-viewport {
+            position: relative; flex-grow: 1;
+            overflow: hidden; /* Mask sliding forms */
+        }
+
+        .auth-panel {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; gap: 20px;
+            transition: transform 0.6s var(--ease-out-expo), opacity 0.4s ease;
+            opacity: 0; pointer-events: none; transform: translateY(40px);
+        }
+        .auth-panel.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+        /* INPUTS: The "Laser" Field */
+        .input-group { position: relative; width: 100%; margin-bottom: 5px; }
+        
+        .field {
+            width: 100%; background: transparent;
+            border: none; border-bottom: 1px solid var(--border);
+            padding: 15px 0; color: var(--text-main);
+            font-family: var(--font-display); font-size: 1rem;
+            transition: border-color 0.3s;
+            border-radius: 0; /* POINTY */
+        }
+        .field:focus { border-color: var(--accent); }
+        
+        .field-label {
+            position: absolute; left: 0; top: 15px;
+            color: var(--text-sub); font-size: 0.9rem; text-transform: uppercase;
+            pointer-events: none; transition: 0.3s var(--ease-out-expo);
+            font-family: var(--font-display);
+        }
+        
+        .field:focus ~ .field-label,
+        .field:not(:placeholder-shown) ~ .field-label {
+            top: -5px; font-size: 0.7rem; color: var(--accent);
+        }
+
+        /* Row Layouts */
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* Interactive Elements */
+        .interactive-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; font-family: var(--font-display); font-size: 0.8rem; color: var(--text-sub);
+        }
+
+        /* The Button: A Physical Plate */
+        .btn-main {
+            margin-top: 40px;
+            background: var(--text-main); color: #000;
+            border: none; padding: 20px;
+            font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.1s;
+        }
+        .btn-main::after {
+            content: ''; position: absolute; inset: 0;
+            background: var(--accent); mix-blend-mode: exclusion;
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.3s var(--ease-out-expo);
+        }
+        .btn-main:hover::after { transform: scaleX(1); }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-text { position: relative; z-index: 2; display: flex; justify-content: space-between; }
+
+        /* Footer Nav */
+        .nav-footer {
+            margin-top: auto; padding-top: 30px; border-top: 1px solid var(--border);
+            display: flex; gap: 20px; font-family: var(--font-display); font-size: 0.8rem;
+        }
+        .nav-item {
+            color: var(--text-sub); cursor: pointer; text-decoration: none; text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-item:hover { color: var(--accent); }
+        .nav-item.active { color: var(--text-main); border-bottom: 1px solid var(--accent); }
+
+        /* --- RIGHT: THE VOID (Visuals) --- */
+        .void {
+            position: relative; overflow: hidden;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Generative Visuals */
+        .data-stream {
+            position: absolute; width: 1px; height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+            opacity: 0.3;
+        }
+
+        .hud-ring {
+            position: absolute; border: 1px solid var(--border);
+            border-radius: 50%; /* Just for the ring effect inside the visual, not UI */
+            opacity: 0.2;
+        }
+
+        /* The "Core" - A square geometric heart */
+        .core {
+            width: 200px; height: 200px;
+            border: 1px solid var(--accent);
+            position: relative;
+            animation: core-spin 20s linear infinite;
+        }
+        .core-inner {
+            position: absolute; inset: 20px; border: 1px solid var(--text-sub);
+            animation: core-spin-rev 15s linear infinite;
+        }
+        
+        .status-overlay {
+            position: absolute; bottom: 40px; right: 40px; text-align: right;
+            font-family: var(--font-display); font-size: 0.7rem; color: var(--accent);
+        }
+
+        /* --- THEME SELECTOR (Integrated) --- */
+        .theme-node {
+            width: 10px; height: 10px; background: #333; margin-left: 10px; cursor: pointer;
+            display: inline-block; transition: 0.3s;
+        }
+        .theme-node:hover, .theme-node.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+        /* ANIMATIONS */
+        @keyframes core-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes core-spin-rev { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+
+    </style>
+</head>
+<body data-theme="crimson">
+
+    <div class="scaffold"></div>
+
+    <div class="monolith">
+        
+        <!-- LEFT CONTROL DECK -->
+        <div class="deck">
+            <div class="terminal-header">
+                <div class="brand">System.Auth_v9</div>
+                <div class="theme-controls">
+                    <div class="theme-node active" onclick="setTheme('crimson')" style="--accent: #A30000"></div>
+                    <div class="theme-node" onclick="setTheme('cyan')" style="--accent: #00FFFF"></div>
+                    <div class="theme-node" onclick="setTheme('amber')" style="--accent: #FFA500"></div>
+                    <div class="theme-node" onclick="setTheme('void')" style="--accent: #FFF"></div>
+                </div>
+            </div>
+
+            <div class="form-viewport">
+                
+                <!-- LOGIN -->
+                <div id="panel-login" class="auth-panel active">
+                    <h1>IDENTIFY</h1>
+                    
+                    <div class="input-group" style="margin-top: 40px;">
+                        <input type="text" class="field" placeholder=" " required>
+                        <label class="field-label">Operative ID</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Access Key</label>
+                    </div>
+
+                    <div class="interactive-row">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input type="checkbox" style="accent-color: var(--accent);"> 
+                            AUTO-CONNECT
+                        </label>
+                        <a href="#" style="color: var(--text-sub); text-decoration:none;">RECOVER KEY</a>
+                    </div>
+
+                    <button class="btn-main">
+                        <span class="btn-text"><span>Connect</span> <span>-></span></span>
+                    </button>
+                    
+                    <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+                        <div style="font-family: var(--font-display); font-size: 0.7rem; color: var(--text-sub); margin-bottom: 10px;">FEDERATED LOGIN</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button style="flex:1; padding: 10px; background:var(--surface-2); border:1px solid var(--border); color:#fff; cursor:pointer;">GOOGLE</button>
+                            <button style="flex:1; padding: 10px; background:var(--surface-2); border:1px solid var(--border); color:#fff; cursor:pointer;">MSFT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGISTER -->
+                <div id="panel-register" class="auth-panel">
+                    <h1>INITIALIZE</h1>
+                    
+                    <div class="row-2" style="margin-top: 30px;">
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">First Name</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Last Name</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" class="field" placeholder=" " required>
+                        <label class="field-label">Secure Frequency (Email)</label>
+                    </div>
+
+                    <div class="row-2">
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Designation (Job Title)</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Sector (Dept)</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Create Access Key</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Confirm Key</label>
+                    </div>
+
+                    <button class="btn-main">
+                        <span class="btn-text"><span>Generate ID</span> <span>+</span></span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="nav-footer">
+                <a onclick="setView('login')" class="nav-item active" id="nav-login">Login</a>
+                <a onclick="setView('register')" class="nav-item" id="nav-register">Register</a>
+                <div style="margin-left: auto; opacity: 0.3;">SYS.READY</div>
+            </div>
+        </div>
+
+        <!-- RIGHT VISUAL VOID -->
+        <div class="void" id="void-canvas">
+            <div class="data-stream" style="left: 20%; animation: stream 3s infinite linear;"></div>
+            <div class="data-stream" style="left: 50%; animation: stream 5s infinite linear;"></div>
+            <div class="data-stream" style="left: 80%; animation: stream 4s infinite linear;"></div>
+            
+            <div class="core">
+                <div class="core-inner"></div>
+            </div>
+
+            <div class="status-overlay">
+                NO LIMITS<br>
+                SECURE CHANNEL<br>
+                ENCRYPTION: MAX
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- THEME ENGINE ---
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            document.querySelectorAll('.theme-node').forEach(n => n.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Re-render procedural effects if necessary
+        }
+
+        // --- NAVIGATION ENGINE ---
+        function setView(view) {
+            // Update Nav State
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`nav-${view}`).classList.add('active');
+
+            // Swap Panels
+            const login = document.getElementById('panel-login');
+            const register = document.getElementById('panel-register');
+
+            if(view === 'login') {
+                register.classList.remove('active');
+                setTimeout(() => login.classList.add('active'), 100);
+            } else {
+                login.classList.remove('active');
+                setTimeout(() => register.classList.add('active'), 100);
+            }
+        }
+
+        // --- PROCEDURAL BACKGROUND ---
+        // Generates random data streams in the void
+        const voidCanvas = document.getElementById('void-canvas');
+        for(let i=0; i<10; i++) {
+            let stream = document.createElement('div');
+            stream.className = 'data-stream';
+            stream.style.left = Math.random() * 100 + '%';
+            stream.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            stream.style.opacity = Math.random() * 0.2;
+            voidCanvas.appendChild(stream);
+        }
+
+        // Add Keyframe for streams via JS to avoid cluttering CSS
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes stream {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100%); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNLIMITED // ACCESS</title>
+    
+    <style>
+        /* --- CORE ARCHITECTURE --- */
+        :root {
+            --h: 0; --s: 0%; --l: 100%; /* Default White Accent */
+            --accent: hsl(var(--h), var(--s), var(--l));
+            --accent-dim: hsla(var(--h), var(--s), var(--l), 0.1);
+            --bg-void: #030303;
+            --surface: #0a0a0a;
+            --surface-2: #111;
+            --text-main: #eee;
+            --text-sub: #555;
+            --border: #222;
+            --font-display: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* THEME MATRIX */
+        body[data-theme="crimson"] { --h: 348; --s: 83%; --l: 47%; }
+        body[data-theme="cyan"] { --h: 180; --s: 100%; --l: 50%; }
+        body[data-theme="amber"] { --h: 30; --s: 100%; --l: 50%; }
+        body[data-theme="void"] { --h: 0; --s: 0%; --l: 100%; }
+
+        /* RESET */
+        * { box-sizing: border-box; outline: none; }
+        ::selection { background: var(--accent); color: #000; }
+        
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            margin: 0; padding: 0;
+            height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND NOISE & GRID --- */
+        .scaffold {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100px 100px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+        
+        /* --- THE MONOLITH (Main Container) --- */
+        .monolith {
+            position: relative; z-index: 10;
+            width: 1400px; height: 850px;
+            background: var(--surface);
+            display: grid; grid-template-columns: 40% 60%;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 100px -20px rgba(0,0,0,1);
+        }
+
+        /* --- LEFT: CONTROL DECK (Forms) --- */
+        .deck {
+            position: relative;
+            padding: 60px;
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--surface) 0%, #000 100%);
+        }
+
+        /* Header Area */
+        .terminal-header {
+            margin-bottom: 60px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .brand {
+            font-family: var(--font-display);
+            font-size: 0.8rem; color: var(--accent);
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .brand::before { content: '/// '; opacity: 0.5; }
+        
+        h1 {
+            font-size: 3.5rem; line-height: 0.9; margin: 0;
+            font-weight: 800; letter-spacing: -2px;
+            background: linear-gradient(to right, #fff, #666);
+            -webkit-background-clip: text; color: transparent;
+        }
+
+        /* --- FORM ARCHITECTURE --- */
+        .form-viewport {
+            position: relative; flex-grow: 1;
+            overflow: hidden; /* Mask sliding forms */
+        }
+
+        .auth-panel {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column; gap: 20px;
+            transition: transform 0.6s var(--ease-out-expo), opacity 0.4s ease;
+            opacity: 0; pointer-events: none; transform: translateY(40px);
+        }
+        .auth-panel.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+        /* INPUTS: The "Laser" Field */
+        .input-group { position: relative; width: 100%; margin-bottom: 5px; }
+        
+        .field {
+            width: 100%; background: transparent;
+            border: none; border-bottom: 1px solid var(--border);
+            padding: 15px 0; color: var(--text-main);
+            font-family: var(--font-display); font-size: 1rem;
+            transition: border-color 0.3s;
+            border-radius: 0; /* POINTY */
+        }
+        .field:focus { border-color: var(--accent); }
+        
+        .field-label {
+            position: absolute; left: 0; top: 15px;
+            color: var(--text-sub); font-size: 0.9rem; text-transform: uppercase;
+            pointer-events: none; transition: 0.3s var(--ease-out-expo);
+            font-family: var(--font-display);
+        }
+        
+        .field:focus ~ .field-label,
+        .field:not(:placeholder-shown) ~ .field-label {
+            top: -5px; font-size: 0.7rem; color: var(--accent);
+        }
+
+        /* Row Layouts */
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* Interactive Elements */
+        .interactive-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; font-family: var(--font-display); font-size: 0.8rem; color: var(--text-sub);
+        }
+
+        /* The Button: A Physical Plate */
+        .btn-main {
+            margin-top: 40px;
+            background: var(--text-main); color: #000;
+            border: none; padding: 20px;
+            font-family: var(--font-display); font-weight: 700; text-transform: uppercase;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.1s;
+        }
+        .btn-main::after {
+            content: ''; position: absolute; inset: 0;
+            background: var(--accent); mix-blend-mode: exclusion;
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.3s var(--ease-out-expo);
+        }
+        .btn-main:hover::after { transform: scaleX(1); }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-text { position: relative; z-index: 2; display: flex; justify-content: space-between; }
+
+        /* Footer Nav */
+        .nav-footer {
+            margin-top: auto; padding-top: 30px; border-top: 1px solid var(--border);
+            display: flex; gap: 20px; font-family: var(--font-display); font-size: 0.8rem;
+        }
+        .nav-item {
+            color: var(--text-sub); cursor: pointer; text-decoration: none; text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-item:hover { color: var(--accent); }
+        .nav-item.active { color: var(--text-main); border-bottom: 1px solid var(--accent); }
+
+        /* --- RIGHT: THE VOID (Visuals) --- */
+        .void {
+            position: relative; overflow: hidden;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Generative Visuals */
+        .data-stream {
+            position: absolute; width: 1px; height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+            opacity: 0.3;
+        }
+
+        .hud-ring {
+            position: absolute; border: 1px solid var(--border);
+            border-radius: 50%; /* Just for the ring effect inside the visual, not UI */
+            opacity: 0.2;
+        }
+
+        /* The "Core" - A square geometric heart */
+        .core {
+            width: 200px; height: 200px;
+            border: 1px solid var(--accent);
+            position: relative;
+            animation: core-spin 20s linear infinite;
+        }
+        .core-inner {
+            position: absolute; inset: 20px; border: 1px solid var(--text-sub);
+            animation: core-spin-rev 15s linear infinite;
+        }
+        
+        .status-overlay {
+            position: absolute; bottom: 40px; right: 40px; text-align: right;
+            font-family: var(--font-display); font-size: 0.7rem; color: var(--accent);
+        }
+
+        /* --- THEME SELECTOR (Integrated) --- */
+        .theme-node {
+            width: 10px; height: 10px; background: #333; margin-left: 10px; cursor: pointer;
+            display: inline-block; transition: 0.3s;
+        }
+        .theme-node:hover, .theme-node.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+        /* ANIMATIONS */
+        @keyframes core-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes core-spin-rev { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+
+    </style>
+</head>
+<body data-theme="crimson">
+
+    <div class="scaffold"></div>
+
+    <div class="monolith">
+        
+        <!-- LEFT CONTROL DECK -->
+        <div class="deck">
+            <div class="terminal-header">
+                <div class="brand">System.Auth_v9</div>
+                <div class="theme-controls">
+                    <div class="theme-node active" onclick="setTheme('crimson')" style="--accent: #A30000"></div>
+                    <div class="theme-node" onclick="setTheme('cyan')" style="--accent: #00FFFF"></div>
+                    <div class="theme-node" onclick="setTheme('amber')" style="--accent: #FFA500"></div>
+                    <div class="theme-node" onclick="setTheme('void')" style="--accent: #FFF"></div>
+                </div>
+            </div>
+
+            <div class="form-viewport">
+                
+                <!-- LOGIN -->
+                <div id="panel-login" class="auth-panel active">
+                    <h1>IDENTIFY</h1>
+                    
+                    <div class="input-group" style="margin-top: 40px;">
+                        <input type="text" class="field" placeholder=" " required>
+                        <label class="field-label">Operative ID</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Access Key</label>
+                    </div>
+
+                    <div class="interactive-row">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                            <input type="checkbox" style="accent-color: var(--accent);"> 
+                            AUTO-CONNECT
+                        </label>
+                        <a href="#" style="color: var(--text-sub); text-decoration:none;">RECOVER KEY</a>
+                    </div>
+
+                    <button class="btn-main">
+                        <span class="btn-text"><span>Connect</span> <span>-></span></span>
+                    </button>
+                    
+                    <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+                        <div style="font-family: var(--font-display); font-size: 0.7rem; color: var(--text-sub); margin-bottom: 10px;">FEDERATED LOGIN</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button style="flex:1; padding: 10px; background:var(--surface-2); border:1px solid var(--border); color:#fff; cursor:pointer;">GOOGLE</button>
+                            <button style="flex:1; padding: 10px; background:var(--surface-2); border:1px solid var(--border); color:#fff; cursor:pointer;">MSFT</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGISTER -->
+                <div id="panel-register" class="auth-panel">
+                    <h1>INITIALIZE</h1>
+                    
+                    <div class="row-2" style="margin-top: 30px;">
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">First Name</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Last Name</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" class="field" placeholder=" " required>
+                        <label class="field-label">Secure Frequency (Email)</label>
+                    </div>
+
+                    <div class="row-2">
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Designation (Job Title)</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="field" placeholder=" " required>
+                            <label class="field-label">Sector (Dept)</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Create Access Key</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" class="field" placeholder=" " required>
+                        <label class="field-label">Confirm Key</label>
+                    </div>
+
+                    <button class="btn-main">
+                        <span class="btn-text"><span>Generate ID</span> <span>+</span></span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="nav-footer">
+                <a onclick="setView('login')" class="nav-item active" id="nav-login">Login</a>
+                <a onclick="setView('register')" class="nav-item" id="nav-register">Register</a>
+                <div style="margin-left: auto; opacity: 0.3;">SYS.READY</div>
+            </div>
+        </div>
+
+        <!-- RIGHT VISUAL VOID -->
+        <div class="void" id="void-canvas">
+            <div class="data-stream" style="left: 20%; animation: stream 3s infinite linear;"></div>
+            <div class="data-stream" style="left: 50%; animation: stream 5s infinite linear;"></div>
+            <div class="data-stream" style="left: 80%; animation: stream 4s infinite linear;"></div>
+            
+            <div class="core">
+                <div class="core-inner"></div>
+            </div>
+
+            <div class="status-overlay">
+                NO LIMITS<br>
+                SECURE CHANNEL<br>
+                ENCRYPTION: MAX
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- THEME ENGINE ---
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            document.querySelectorAll('.theme-node').forEach(n => n.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Re-render procedural effects if necessary
+        }
+
+        // --- NAVIGATION ENGINE ---
+        function setView(view) {
+            // Update Nav State
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`nav-${view}`).classList.add('active');
+
+            // Swap Panels
+            const login = document.getElementById('panel-login');
+            const register = document.getElementById('panel-register');
+
+            if(view === 'login') {
+                register.classList.remove('active');
+                setTimeout(() => login.classList.add('active'), 100);
+            } else {
+                login.classList.remove('active');
+                setTimeout(() => register.classList.add('active'), 100);
+            }
+        }
+
+        // --- PROCEDURAL BACKGROUND ---
+        // Generates random data streams in the void
+        const voidCanvas = document.getElementById('void-canvas');
+        for(let i=0; i<10; i++) {
+            let stream = document.createElement('div');
+            stream.className = 'data-stream';
+            stream.style.left = Math.random() * 100 + '%';
+            stream.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            stream.style.opacity = Math.random() * 0.2;
+            voidCanvas.appendChild(stream);
+        }
+
+        // Add Keyframe for streams via JS to avoid cluttering CSS
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes stream {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100%); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Navigation Bar</title>
+    <!-- Load Tailwind CSS for basic reset and utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Apply a global font and background for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+            margin: 0;
+            padding: 0;
+            display: flex; /* Use flexbox to center content */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            min-height: 100vh; /* Ensure it takes full viewport height */
+        }
+
+        /* Styling for the navigation container */
+        .navbar {
+            background-color: #334155; /* Dark slate blue */
+            padding: 0.75rem 1.5rem; /* Padding around the entire nav bar */
+            border-radius: 0.75rem; /* Rounded corners for the navbar */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Subtle shadow for depth */
+            width: 100%; /* Take full width of its container */
+            max-width: 800px; /* Limit max width for better readability on large screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* Styling for the unordered list inside the navigation */
+        .navbar ul {
+            list-style: none; /* Remove default bullet points */
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+            display: flex; /* Make list items arrange horizontally */
+            justify-content: space-around; /* Distribute items evenly with space around them */
+            align-items: center; /* Align items vertically in the center */
+            flex-wrap: wrap; /* Allow items to wrap to the next line on smaller screens */
+        }
+
+        /* Styling for individual list items */
+        .navbar li {
+            margin: 0 0.5rem; /* Horizontal margin between items */
+        }
+
+        /* Styling for the anchor (link) elements */
+        .navbar a {
+            display: block; /* Make the entire padding area clickable */
+            padding: 0.75rem 1rem; /* Padding inside each menu item */
+            color: #e2e8f0; /* Light gray text color */
+            text-decoration: none; /* Remove underline from links */
+            font-weight: 500; /* Medium font weight */
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease; /* Smooth transition for hover effects */
+            border-radius: 0.5rem; /* Slightly rounded corners for individual items */
+        }
+
+        /* Hover effect for the links */
+        .navbar a:hover {
+            background-color: #475569; /* Slightly lighter slate blue on hover */
+            color: #ffffff; /* White text on hover */
+            transform: translateY(-2px); /* Slight lift effect on hover */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow on hover */
+        }
+
+        /* Active state for demonstration (you'd typically set this with JavaScript) */
+        .navbar a.active {
+            background-color: #0d9488; /* Teal color for the active item */
+            color: #ffffff;
+            font-weight: 700; /* Bold text for active item */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .navbar ul {
+                flex-direction: column; /* Stack items vertically on small screens */
+                align-items: stretch; /* Stretch items to full width */
+            }
+
+            .navbar li {
+                margin: 0.25rem 0; /* Adjust vertical margin for stacked items */
+            }
+
+            .navbar a {
+                text-align: center; /* Center text when stacked */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <ul>
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Portfolio</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+</body>
+</html>

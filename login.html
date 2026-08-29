@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IGNTRZ Login - Tron Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Ensure html and body take full height for min-h-screen to work correctly */
+    html, body, #root {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      /* overflow: hidden; Uncomment if you want to prevent all scrolling, but be cautious with responsive layouts */
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .input-glow-focus:focus {
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.7); /* Blue glow */
+    }
+    .neon-border {
+      border-image-slice: 1;
+      border-image-source: linear-gradient(to right, #0ff, #f0f); /* Cyan to Magenta */
+    }
+    .neon-text-gradient {
+      background: linear-gradient(to right, #00f0ff, #cc00ff); /* Cyan to Purple */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .button-neon-gradient {
+      background-image: linear-gradient(to right, #00f0ff, #8a2be2); /* Cyan to Blue Violet */
+    }
+    .button-neon-gradient:hover {
+      background-image: linear-gradient(to right, #8a2be2, #00f0ff); /* Reverse gradient on hover */
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.1); opacity: 0.5; }
+    }
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-pulse {
+      animation: pulse 4s infinite ease-in-out;
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 6s infinite ease-in-out;
+    }
+    .animate-spin-slow {
+      animation: spin-slow 20s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div> <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React; // Destructure useState and useEffect from React
+
+    // Inline SVG for User icon (from lucide-react concept)
+    const UserIcon = ({ size = 24, ...props }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+      >
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    );
+
+    // Inline SVG for Lock icon (from lucide-react concept)
+    const LockIcon = ({ size = 24, ...props }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+      >
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    );
+
+    // Inline SVG for Eye icon (from lucide-react concept)
+    const EyeIcon = ({ size = 24, ...props }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+      >
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    );
+
+    // Inline SVG for EyeOff icon (from lucide-react concept)
+    const EyeOffIcon = ({ size = 24, ...props }) => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        {...props}
+      >
+        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.76 9.76 0 0 0 5.46-1.61"></path>
+        <line x1="2" x2="22" y1="2" y2="22"></line>
+      </svg>
+    );
+
+    const App = () => {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [showPassword, setShowPassword] = useState(false);
+      const [rememberMe, setRememberMe] = useState(false);
+      const [loginMessage, setLoginMessage] = useState('');
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        console.log('Logging in with:', { email, password, rememberMe });
+        setLoginMessage('Login attempted! Check console for values.');
+        setTimeout(() => {
+          setLoginMessage('');
+        }, 3000); // Message disappears after 3 seconds
+      };
+
+      return (
+        <div className="min-h-screen w-full bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-100 flex items-center justify-center p-4 overflow-hidden">
+          <div className="relative w-full max-w-md bg-gray-800 bg-opacity-60 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl p-8 border border-gray-700/50 overflow-hidden">
+            {/* Abstract background elements for Tron feel */}
+            <div className="absolute inset-0 z-0 opacity-20">
+              <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse-slow"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border-2 border-dashed border-cyan-400 rounded-full animate-spin-slow"></div>
+            </div>
+
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold mb-6 text-center neon-text-gradient">
+                <span className="block mb-1">IGNTRZ</span>
+                <span className="block">WELCOME</span>
+              </h2>
+
+              {loginMessage && (
+                <div className="bg-green-600 bg-opacity-80 text-white text-center py-2 px-4 rounded-md mb-4 transition-opacity duration-500 ease-in-out opacity-100">
+                  {loginMessage}
+                </div>
+              )}
+
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                    <UserIcon className="inline-block mr-2 text-cyan-400" size={18} />
+                    Username or Email
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      id="email"
+                      className="w-full px-4 py-3 bg-gray-700 bg-opacity-70 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent input-glow-focus transition-all duration-300"
+                      placeholder="Enter your username or email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                    <LockIcon className="inline-block mr-2 text-purple-400" size={18} />
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      className="w-full px-4 py-3 bg-gray-700 bg-opacity-70 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent input-glow-focus transition-all duration-300 pr-10"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-cyan-400 focus:outline-none"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 text-cyan-500 focus:ring-cyan-500 border-gray-600 rounded bg-gray-700"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    <label htmlFor="remember-me" className="ml-2 block text-gray-300">
+                      Remember me
+                    </label>
+                  </div>
+                  <a href="#" className="font-medium text-purple-400 hover:text-purple-300 transition-colors duration-200">
+                    Forgot password?
+                  </a>
+                </div>
+
+                <div>
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white button-neon-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500 transform transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    LOGIN
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-8 text-center text-gray-400">
+                Don't have an account?{' '}
+                <a href="#" className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors duration-200">
+                  Sign Up
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Render the App component into the 'root' div
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
