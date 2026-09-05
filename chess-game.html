@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game - 2D Multiplayer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0;
+            background-color: #8b7355;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .chess-square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 40px;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .chess-square.light {
+            background-color: #f0d9b5;
+        }
+
+        .chess-square.dark {
+            background-color: #b58863;
+        }
+
+        .chess-square.selected {
+            box-shadow: inset 0 0 0 3px #baca44;
+        }
+
+        .chess-square.valid-move {
+            box-shadow: inset 0 0 0 2px #7cb342;
+        }
+
+        .chess-square.valid-capture {
+            box-shadow: inset 0 0 0 2px #d32f2f;
+        }
+
+        .piece {
+            cursor: move;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .piece:hover {
+            filter: brightness(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .chess-square {
+                width: 45px;
+                height: 45px;
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <!-- Game Container -->
+        <div class="w-full max-w-2xl">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-bold mb-2">♟ Chess Game ♟</h1>
+                <p class="text-gray-400">2D Multiplayer Chess</p>
+            </div>
+
+            <!-- Mode Selection -->
+            <div id="modeSelection" class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4">Select Game Mode</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="startLocalGame()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold transition">
+                        👥 Local Multiplayer (Same Screen)
+                    </button>
+                    <button onclick="showLANOptions()" class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-bold transition">
+                        🌐 LAN Multiplayer
+                    </button>
+                </div>
+            </div>
+
+            <!-- LAN Options -->
+            <div id="lanOptions" class="bg-gray-800 rounded-lg p-6 mb-6 hidden">
+                <h2 class="text-xl font-bold mb-4">LAN Multiplayer</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Player Name</label>
+                        <input type="text" id="playerName" placeholder="Enter your name" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Server URL</label>
+                        <input type="text" id="serverUrl" placeholder="ws://localhost:8080" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="hostGame()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold transition">
+                            Host Game
+                        </button>
+                        <button onclick="joinGame()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-bold transition">
+                            Join Game
+                        </button>
+                    </div>
+                    <button onclick="cancelLAN()" class="w-full bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded font-bold transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Status -->
+            <div id="gameStatus" class="bg-gray-800 rounded-lg p-4 mb-4 text-center hidden">
+                <p id="statusText" class="font-bold"></p>
+                <p id="turnText" class="text-sm text-gray-400 mt-2"></p>
+            </div>
+
+            <!-- Game Info -->
+            <div id="gameInfo" class="bg-gray-800 rounded-lg p-4 mb-4 hidden grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-400">White Player</p>
+                    <p class="font-bold" id="whitePlayer">Player 1</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Black Player</p>
+                    <p class="font-bold" id="blackPlayer">Player 2</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Current Turn</p>
+                    <p class="font-bold" id="currentTurn">White</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Game Status</p>
+                    <p class="font-bold" id="gameStateText">Playing</p>
+                </div>
+            </div>
+
+            <!-- Chess Board -->
+            <div class="flex justify-center mb-6">
+                <div class="chess-board" id="chessBoard"></div>
+            </div>
+
+            <!-- Controls -->
+            <div id="gameControls" class="flex gap-3 justify-center mb-6 hidden">
+                <button onclick="undoMove()" class="bg-yellow-600 hover:bg-yellow-700 px-6 py-2 rounded font-bold transition">
+                    ↶ Undo Move
+                </button>
+                <button onclick="resetGame()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-bold transition">
+                    🔄 New Game
+                </button>
+                <button onclick="returnToMenu()" class="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded font-bold transition">
+                    ← Menu
+                </button>
+            </div>
+
+            <!-- Move History -->
+            <div id="moveHistory" class="bg-gray-800 rounded-lg p-4 hidden max-h-48 overflow-y-auto">
+                <h3 class="font-bold mb-3">Move History</h3>
+                <div id="moveList" class="grid grid-cols-2 gap-2 text-sm">
+                    <!-- Moves will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chess-game.js"></script>
+</body>
+</html>
